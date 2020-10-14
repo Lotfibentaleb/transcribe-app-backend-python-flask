@@ -40,14 +40,14 @@ def user_add():
         return jsonify({"message": "fail"}), 409
 
 
-@users.route("/edit", methods=["POST"])
-def user_edit():
-    user_id = request.json["id"]
+@users.route("/edit/<int:user_id>", methods=["POST"])
+def user_edit(user_id):
+    # user_id = request.json["id"]
     user_email = request.json["email"]
     user_first_name = request.json["first_name"]
     user_last_name = request.json["last_name"]
 
-    if db_write("""UPDATE users SET email=%s, first_name=%s, last_name=%s WHERE id=%s""", (user_email, user_first_name, user_last_name, user_id),
+    if db_write("""UPDATE users SET email=%s, first_name=%s, last_name=%s WHERE id=%s""", (user_email, user_first_name, user_last_name, [user_id]),
     ):
         user_list = db_read("""SELECT email, first_name, last_name, createdAt, updatedAt FROM users""", (), )
         if user_list:
