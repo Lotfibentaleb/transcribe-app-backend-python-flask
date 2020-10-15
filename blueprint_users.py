@@ -30,7 +30,7 @@ def user_add():
             """INSERT INTO users (email, password_salt, password_hash, first_name, last_name, permission, createdAt, updatedAt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
             (user_email, password_salt, password_hash, user_first_name, user_last_name, "user", formatted_date, formatted_date),
     ):
-        user_list = db_read("""SELECT email, first_name, last_name, createdAt, updatedAt FROM users""", (),)
+        user_list = db_read("""SELECT id, email, first_name, last_name, createdAt, updatedAt FROM users""", (),)
         if user_list:
             # Registration Successful
             return jsonify({"users": user_list, "message": "success"})
@@ -49,7 +49,7 @@ def user_edit(user_id):
 
     if db_write("""UPDATE users SET email=%s, first_name=%s, last_name=%s WHERE id=%s""", (user_email, user_first_name, user_last_name, [user_id]),
     ):
-        user_list = db_read("""SELECT email, first_name, last_name, createdAt, updatedAt FROM users""", (), )
+        user_list = db_read("""SELECT id, email, first_name, last_name, createdAt, updatedAt FROM users""", (), )
         if user_list:
             # Registration Successful
             return jsonify({"users": user_list, "message": "success"})
@@ -63,7 +63,7 @@ def user_delete(user_id):
 
     if db_write("""DELETE FROM users WHERE id=%s""", [user_id]):
 
-        user_list = db_read("""SELECT email, first_name, last_name, createdAt, updatedAt FROM users""", (), )
+        user_list = db_read("""SELECT id, email, first_name, last_name, createdAt, updatedAt FROM users""", (), )
         if user_list:
             # Registration Successful
             return jsonify({"users": user_list, "message": "success"})
@@ -71,9 +71,3 @@ def user_delete(user_id):
             return jsonify({"message": "fail"}), 409
     else:
         return jsonify({"message": "fail"}), 409
-
-
-    user_list = db_read("""SELECT email, first_name, last_name, createdAt, updatedAt FROM users""", (),)
-    if user_list:
-        # Registration Successful
-        return jsonify({"users": user_list})
