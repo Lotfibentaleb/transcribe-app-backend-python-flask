@@ -22,6 +22,8 @@ if __name__ == '__main__':
     app.register_blueprint(auth, url_prefix="/api/auth")
     from blueprint_users import users
     app.register_blueprint(users, url_prefix="/api/users")
+    from blueprint_transcribe import transcribe
+    app.register_blueprint(transcribe, url_prefix="/api/transcribe")
     app.run(host="192.168.149.136", port=5000, debug=True)
 
 
