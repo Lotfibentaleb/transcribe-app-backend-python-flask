@@ -1,3 +1,9 @@
 # Untrack folders
 
-*.pyc
+__pycache__/
+
+.env
+
+.idea/
+
+require.sh
