@@ -2,8 +2,12 @@
 
 __pycache__/
 
+*.pyc
+
 .env
 
 .idea/
+
+venv/
 
 require.sh
