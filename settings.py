@@ -17,3 +17,8 @@ S3_TRANSCRIBE_BUCKET = os.getenv("S3_TRANSCRIBE_BUCKET")
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 APP_STATIC = os.path.join(APP_ROOT, 'static')
+
+UPLOAD_FOLDER = "./static"
+
+AUDIO_EXTENSION = os.getenv("AUDIO_EXTENSION")
+VIDEO_EXTENSION = os.getenv("VIDEO_EXTENSION")

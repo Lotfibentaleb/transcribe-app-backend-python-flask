@@ -6,6 +6,7 @@ import MySQLdb
 import boto3
 from settings import JWT_SECRET_KEY, S3_KEY, S3_SECRET_ACCESS_KEY
 import time
+import json
 
 s3 = boto3.client(
    "s3",
@@ -15,7 +16,7 @@ s3 = boto3.client(
 
 transcribe_client = boto3.client('transcribe', aws_access_key_id=S3_KEY, aws_secret_access_key=S3_SECRET_ACCESS_KEY)
 
-ALLOWED_EXTENSIONS = {'mp3', 'mp4', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'mp3', 'wav', 'aac', 'mp4', 'avi', 'mpeg'}
 
 def validate_user(email, password):
     current_user = db_read("""SELECT * FROM users WHERE email = %s""", (email,))
@@ -125,11 +126,34 @@ def transcribe_file(job_name, file_uri):
                 print(
                     f"Download the transcript from\n"
                     f"\t{job['TranscriptionJob']['Transcript']['TranscriptFileUri']}.")
+                return job['TranscriptionJob']['Transcript']['TranscriptFileUri']
             break
         else:
             print(f"Waiting for {job_name}. Current status is {job_status}.")
         time.sleep(10)
 
+def distinguish_audio_video(param_extension):
+    param_extension_array = param_extension.split(",")
+    abailable_audio_extension = app.config["AUDIO_EXTENSION"]
+    abailable_video_extension = app.config["VIDEO_EXTENSION"]
+    audio_extension_array = abailable_audio_extension.split(",")
+    video_extension_array = abailable_video_extension.split(",")
+    count = 0
+    for param_extention in param_extension_array:
+        for audio_extension in audio_extension_array:
+            if audio_extension.strip() == param_extention.strip():
+                count = count + 1
+    if count !=0:
+        return "audio"
+
+    for param_extention in param_extension_array:
+        for video_extension in video_extension_array:
+            if video_extension.strip() == param_extention.strip():
+                count = count + 1
+    if count !=0:
+        return "video"
+
+    return "wrong"
 
 # def main():
 #     file_uri = 's3://test-transcribe/answer2.wav'
