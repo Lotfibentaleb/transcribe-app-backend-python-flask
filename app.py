@@ -5,20 +5,24 @@ from settings import MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB, MYSQL_HOST, JWT_SECRE
 from flask_jwt_extended import (
     JWTManager
 )
-import requests
 import logging
 
 app = Flask(__name__)
+CORS(
+    app, origins="*", allow_headers=[
+        "Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
+        supports_credentials=True, intercept_exceptions=False
+)
 
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
-CORS(app, expose_headers='Authorization')
+# CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+# CORS(app, expose_headers='Authorization')
 
-app.config['CORS_ORIGINS'] = '*'
-app.config['CORS_SUPPORTS_CREDENTIALS'] = 'True'
-app.config['CORS_HEADERS'] = 'Content-Type'
+# app.config['CORS_ORIGINS'] = '*'
+# app.config['CORS_SUPPORTS_CREDENTIALS'] = 'True'
+# app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.debug = True
-
+app.config['PROPAGATE_EXCEPTIONS'] = True
 logging.getLogger('flask_cors').level = logging.DEBUG
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["AUDIO_EXTENSION"] = AUDIO_EXTENSION
@@ -37,6 +41,9 @@ app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
 jwt = JWTManager(app)
 
 if __name__ == '__main__':
+    @app.route("/")
+    def hello():
+        return "Hello world!"
     from controllers.auth import auth
     app.register_blueprint(auth, url_prefix="/api/auth")
     from controllers.users import users
@@ -45,7 +52,7 @@ if __name__ == '__main__':
     app.register_blueprint(transcribe, url_prefix="/api/transcribe")
     from controllers.medias import medias
     app.register_blueprint(medias, url_prefix="/api/medias")
-    app.run(host="192.168.149.137", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
 
 
 

@@ -6,6 +6,7 @@ import MySQLdb
 import boto3
 from settings import JWT_SECRET_KEY, S3_KEY, S3_SECRET_ACCESS_KEY
 import time
+from flask_jwt_extended import create_access_token
 import json
 
 s3 = boto3.client(
@@ -29,7 +30,8 @@ def validate_user(email, password):
         if password_hash == saved_password_hash:
             user_id = current_user[0]["id"]
             permission = current_user[0]["permission"]
-            jwt_token = generate_jwt_token({"user_id": user_id, "permission": permission})
+            user_email = current_user[0]["email"]
+            jwt_token = create_access_token({"user_id": user_id, "permission": permission, "email": user_email})
             return jwt_token
         else:
             return False
@@ -154,10 +156,6 @@ def distinguish_audio_video(param_extension):
         return "video"
 
     return "wrong"
-
-# def main():
-#     file_uri = 's3://test-transcribe/answer2.wav'
-#     transcribe_file('Example-job', file_uri, transcribe_client)
 
 
 if __name__ == '__main__':

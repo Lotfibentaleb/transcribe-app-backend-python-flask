@@ -2,19 +2,26 @@ from flask import Blueprint, request, Response, jsonify
 from models.utils import *
 from datetime import datetime
 from flask_jwt_extended import (jwt_required, get_jwt_identity)
-from flask_cors import cross_origin
 
 users = Blueprint("users", __name__)
 
 @users.route("/", methods=["GET"])
-@cross_origin(headers=['Authorization'])
 @jwt_required
 def user_list():
-    header = request.headers
-    print(header)
-    user_list = db_read("""SELECT id, email, first_name, last_name, permission, createdAt, updatedAt FROM users""", (),)
+    # header = request.headers
+    # print(header)
+    current_user = get_jwt_identity()
+    user_id = current_user["user_id"]
+    user_permission = current_user["permission"]
+    if user_permission == "admin":
+        user_list = db_read("""SELECT id, email, first_name, last_name, permission, createdAt, updatedAt FROM users""", (),)
+    else:
+        user_list = db_read("""SELECT id, email, first_name, last_name, permission, createdAt, updatedAt FROM users WHERE id=%s""",
+                            (str(user_id),), )
     if user_list:
-        return jsonify({"users": user_list})
+        return jsonify({"msg": "success", "success": "true", "users": user_list})
+    else:
+        return jsonify({"msg": "fail", "success": "false"})
 
 @users.route("/add", methods=["POST"])
 @jwt_required
@@ -43,7 +50,6 @@ def user_add():
             return jsonify({"msg": "fail"}), 409
     else:
         return jsonify({"msg": "fail"}), 409
-
 
 @users.route("/edit/<int:user_id>", methods=["POST"])
 @jwt_required

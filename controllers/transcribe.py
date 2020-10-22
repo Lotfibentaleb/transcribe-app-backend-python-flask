@@ -7,6 +7,7 @@ from flask_jwt_extended import (jwt_required, get_jwt_identity)
 transcribe = Blueprint("transcribe", __name__)
 
 @transcribe.route("/<int:media_id>", methods=["POST"])
+@jwt_required
 def audio_transcribe(media_id):
     s3_url = request.json["s3_url"]
     index = request.json["index"]

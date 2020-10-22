@@ -1,7 +1,6 @@
 from flask import Blueprint, request, Response, jsonify
 from models.utils import *
 from datetime import datetime
-from flask_jwt_extended import create_access_token
 
 auth = Blueprint("auth", __name__)
 
@@ -28,9 +27,7 @@ def register_user():
             """INSERT INTO users (email, password_salt, password_hash, first_name, last_name, permission, createdAt, updatedAt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
             (user_email, password_salt, password_hash, user_first_name, user_last_name, "user", formatted_date, formatted_date),
         ):
-
             return jsonify({"msg": "Registration Success", "success": "true"}), 201
-
         else:
             # Registration Failed
             return jsonify({"msg": "Registration Failed", "success": "false"}), 401
@@ -43,11 +40,8 @@ def login_user():
     user_email = request.json["email"]
     user_password = request.json["password"]
     current_user = db_read("""SELECT * FROM users WHERE email = %s""", (user_email,))
-    # user_token = validate_user(user_email, user_password)
-
-    user_token = create_access_token(identity=user_email)
-
+    user_token = validate_user(user_email, user_password)
     if user_token:
         return jsonify({"msg": "login success", "success": "true", "jwt_token": user_token, "permission": current_user[0]["permission"]})
     else:
-        return Response(status=401)
+        return jsonify({"msg": "bad user email or password", "success": "false"}), 201
