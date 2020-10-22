@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_mysqldb import MySQL
 from flask_cors import CORS
 from settings import MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB, MYSQL_HOST, JWT_SECRET_KEY, S3_MEDIA_BUCKET, S3_TRANSCRIBE_BUCKET, UPLOAD_FOLDER, AUDIO_EXTENSION, VIDEO_EXTENSION
@@ -39,6 +39,14 @@ app.config["S3_VIDEO_SUB_FOLDER"] = 'video-datas'
 db = MySQL(app)
 app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
 jwt = JWTManager(app)
+
+@jwt.expired_token_loader
+def my_expired_token_callback():
+    return jsonify({
+        'status': 401,
+        'sub_status': 42,
+        'msg': 'The token has expired'
+    }), 401
 
 if __name__ == '__main__':
     @app.route("/")

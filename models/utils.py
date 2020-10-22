@@ -6,6 +6,7 @@ import MySQLdb
 import boto3
 from settings import JWT_SECRET_KEY, S3_KEY, S3_SECRET_ACCESS_KEY
 import time
+import datetime
 from flask_jwt_extended import create_access_token
 import json
 
@@ -31,7 +32,8 @@ def validate_user(email, password):
             user_id = current_user[0]["id"]
             permission = current_user[0]["permission"]
             user_email = current_user[0]["email"]
-            jwt_token = create_access_token({"user_id": user_id, "permission": permission, "email": user_email})
+            expires = datetime.timedelta(seconds=10)
+            jwt_token = create_access_token({"user_id": user_id, "permission": permission, "email": user_email}, expires_delta=expires)
             return jwt_token
         else:
             return False
