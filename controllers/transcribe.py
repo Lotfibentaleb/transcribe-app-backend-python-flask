@@ -2,7 +2,7 @@ from flask import Blueprint, request, Response, jsonify
 from models.utils import *
 from datetime import datetime
 from app import app
-from flask_jwt_extended import (jwt_required, get_jwt_identity)
+from flask_jwt_extended import (jwt_required, get_jwt_identity, create_access_token)
 
 transcribe = Blueprint("transcribe", __name__)
 

@@ -8,8 +8,6 @@ users = Blueprint("users", __name__)
 @users.route("/", methods=["GET"])
 @jwt_required
 def user_list():
-    # header = request.headers
-    # print(header)
     current_user = get_jwt_identity()
     user_id = current_user["user_id"]
     user_permission = current_user["permission"]
@@ -19,9 +17,9 @@ def user_list():
         user_list = db_read("""SELECT id, email, first_name, last_name, permission, createdAt, updatedAt FROM users WHERE id=%s""",
                             (str(user_id),), )
     if user_list:
-        return jsonify({"msg": "success", "success": "true", "users": user_list})
+        return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "users": user_list})
     else:
-        return jsonify({"msg": "fail", "success": "false"})
+        return jsonify({"jwt_token": refresh_token(), "msg": "fail", "success": "false"})
 
 @users.route("/add", methods=["POST"])
 @jwt_required
@@ -33,7 +31,7 @@ def user_add():
 
     current_user = db_read("""SELECT * FROM users WHERE email = %s""", (user_email,))
     if len(current_user) != 0:
-        return jsonify({"msg": "existing the same user"})
+        return jsonify({"jwt_token": refresh_token(), "msg": "existing the same user"})
 
     password_salt = generate_salt()
     password_hash = generate_hash(user_password, password_salt)
@@ -45,11 +43,11 @@ def user_add():
     ):
         user_list = db_read("""SELECT id, email, first_name, last_name, createdAt, updatedAt FROM users""", (),)
         if user_list:
-            return jsonify({"users": user_list, "msg": "success"})
+            return jsonify({"jwt_token": refresh_token(), "users": user_list, "msg": "success", "success": "true"})
         else:
-            return jsonify({"msg": "fail"}), 409
+            return jsonify({"jwt_token": refresh_token(), "msg": "fail"}), 409
     else:
-        return jsonify({"msg": "fail"}), 409
+        return jsonify({"jwt_token": refresh_token(), "msg": "fail"}), 409
 
 @users.route("/edit/<int:user_id>", methods=["POST"])
 @jwt_required
@@ -62,11 +60,11 @@ def user_edit(user_id):
     ):
         user_list = db_read("""SELECT id, email, first_name, last_name, createdAt, updatedAt FROM users""", (), )
         if user_list:
-            return jsonify({"users": user_list, "msg": "success"})
+            return jsonify({"jwt_token": refresh_token(), "users": user_list, "msg": "success"})
         else:
-            return jsonify({"msg": "fail"}), 409
+            return jsonify({"jwt_token": refresh_token(), "msg": "fail"}), 409
     else:
-        return jsonify({"msg": "fail"}), 409
+        return jsonify({"jwt_token": refresh_token(), "msg": "fail"}), 409
 
 @users.route("/delete/<int:user_id>", methods=["GET"])
 @jwt_required
@@ -75,8 +73,8 @@ def user_delete(user_id):
 
         user_list = db_read("""SELECT id, email, first_name, last_name, createdAt, updatedAt FROM users""", (), )
         if user_list:
-            return jsonify({"users": user_list, "msg": "success"})
+            return jsonify({"jwt_token": refresh_token(), "users": user_list, "msg": "success", "success": "true"})
         else:
-            return jsonify({"msg": "fail"}), 409
+            return jsonify({"jwt_token": refresh_token(), "msg": "fail", "success": "false"}), 409
     else:
-        return jsonify({"msg": "fail"}), 409
+        return jsonify({"jwt_token": refresh_token(), "msg": "fail", "success": "false"}), 409

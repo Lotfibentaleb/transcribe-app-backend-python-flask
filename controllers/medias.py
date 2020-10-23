@@ -4,7 +4,6 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 from settings import S3_MEDIA_BUCKET
 from flask_jwt_extended import (jwt_required, get_jwt_identity)
-from flask_cors import CORS
 import subprocess
 import json
 
@@ -20,9 +19,9 @@ def media_list():
     else:
         media_list = db_read("SELECT * FROM media_datas where id=%s", (str(user_id),), )
     if media_list:
-        return jsonify({"msg": "media list success", "success": "true", "media_list": media_list})
+        return jsonify({"jwt_token": refresh_token(), "msg": "media list success", "success": "true", "media_list": media_list})
     else:
-        return jsonify({"msg": "no data", "success": "true"})
+        return jsonify({"jwt_token": refresh_token(), "msg": "no data", "success": "true"})
 
 @medias.route("/delete/<int:media_id>", methods=["GET"])
 @jwt_required
@@ -30,12 +29,11 @@ def media_delete(media_id):
     if db_write("""DELETE FROM media_datas WHERE id=%s""", [media_id]):
         media_datas = db_read("SELECT * FROM media_datas", (), )
         if media_datas:
-            return jsonify({"media_list": media_datas, "msg": "deleted media successfully", "success": "true"})
+            return jsonify({"jwt_token": refresh_token(), "media_list": media_datas, "msg": "deleted media successfully", "success": "true"})
         else:
-            return jsonify({"msg": "no media datas", "success": "true", "media_list": []}), 201
+            return jsonify({"jwt_token": refresh_token(), "msg": "no media datas", "success": "true", "media_list": []}), 201
     else:
-        return jsonify({"msg": "delete media fail", "success": "false"}), 409
-
+        return jsonify({"jwt_token": refresh_token(), "msg": "delete media fail", "success": "false"}), 409
 
 @medias.route("/upload", methods=["POST"])
 @jwt_required
@@ -81,8 +79,8 @@ def media_upload():
                             "SELECT id, duration FROM media_datas where userId=%s and file_name=%s and s3_url like %s",
                             (user_id, filename, s3_full_url),)
                         if (media_data):
-                            return jsonify({"msg": "uploaded file successfully", "index": index, "s3_url": s3_full_url, "mediaId": media_data[0]["id"], "playTime": media_data[0]["duration"],
+                            return jsonify({"jwt_token": refresh_token(), "msg": "uploaded file successfully", "index": index, "s3_url": s3_full_url, "mediaId": media_data[0]["id"], "playTime": media_data[0]["duration"],
                                             "success": "true"}), 201
-                        else: return jsonify({"msg": "failed saving db", "success": "false"}), 201
-                    else: return jsonify({"msg": "failed saving db", "success": "false"}), 201
-                else: return jsonify({"msg": "unavailable file format", "success": "false"})
+                        else: return jsonify({"jwt_token": refresh_token(), "msg": "failed saving db", "success": "false"}), 201
+                    else: return jsonify({"jwt_token": refresh_token(), "msg": "failed saving db", "success": "false"}), 201
+                else: return jsonify({"jwt_token": refresh_token(), "msg": "unavailable file format", "success": "false"})
