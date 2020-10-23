@@ -23,6 +23,24 @@ def media_list():
     else:
         return jsonify({"jwt_token": refresh_token(), "msg": "no data", "success": "true"})
 
+@medias.route("/search", methods=["POST"])
+@jwt_required
+def media_search_list():
+    start_date = request.json["start_date"]
+    end_date = request.json["end_date"]
+    current_user = get_jwt_identity()
+    user_id = current_user["user_id"]
+    user_permission = current_user["permission"]
+    if user_permission == "admin":
+        media_list = db_read("SELECT * FROM media_datas WHERE createdAt >= date %s and createdAt <= date %s + 1", (start_date, end_date), )
+    else:
+        media_list = db_read("SELECT * FROM media_datas where id=%s and createdAt >= date %s and createdAt <= date %s", (str(user_id), start_date, end_date), )
+    if media_list:
+        return jsonify(
+            {"jwt_token": refresh_token(), "msg": "media list success", "success": "true", "media_list": media_list})
+    else:
+        return jsonify({"jwt_token": refresh_token(), "msg": "no data", "success": "true"})
+
 @medias.route("/delete/<int:media_id>", methods=["GET"])
 @jwt_required
 def media_delete(media_id):
