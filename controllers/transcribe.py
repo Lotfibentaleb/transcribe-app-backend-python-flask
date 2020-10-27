@@ -25,7 +25,7 @@ def audio_transcribe(media_id):
     if (db_write("""UPDATE media_datas SET transcribe_status=%s, transcribe_url=%s, updatedAt=%s WHERE id=%s""",
                 ("1", transcribe_url, formatted_date, str(media_id)),
                 )):
-        return jsonify({"msg": "success", "success": "true", "transcribe_url": transcribe_url, "mediaId": media_id, "index": index, "file_name": file_name[0]['file_name']}), 201
+        return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "transcribe_url": transcribe_url, "mediaId": media_id, "index": index, "file_name": file_name[0]['file_name']}), 201
     else:
-        return jsonify({"msg": "failed transcribe", "success": "false"})
+        return jsonify({"jwt_token": refresh_token(), "msg": "failed transcribe", "success": "false"})
 

@@ -60,6 +60,8 @@ if __name__ == '__main__':
     app.register_blueprint(transcribe, url_prefix="/api/transcribe")
     from controllers.medias import medias
     app.register_blueprint(medias, url_prefix="/api/medias")
+    from controllers.price import price
+    app.register_blueprint(price, url_prefix="/api/price")
     app.run(host="0.0.0.0", port=5000, debug=True)
 
 
