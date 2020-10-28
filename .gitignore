@@ -1,15 +1,27 @@
-# Untrack folders
-
+# Byte-compiled / optimized / DLL files
 __pycache__/
-
-*.pyc
-
-.myprojectenv
-
-.idea/
-
-venv/
-
 .env
-
+.flaskenv
+*.pyc
+*.pyo
+myprojectenv/
+myproject.log
 require.sh
+env*
+dist/
+build/
+*.egg
+*.egg-info/
+_mailinglist
+.tox/
+.cache/
+.pytest_cache/
+.idea/
+docs/_build/
+.vscode
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+*,cover

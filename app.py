@@ -14,13 +14,6 @@ CORS(
         supports_credentials=True, intercept_exceptions=False
 )
 
-# CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
-# CORS(app, expose_headers='Authorization')
-
-# app.config['CORS_ORIGINS'] = '*'
-# app.config['CORS_SUPPORTS_CREDENTIALS'] = 'True'
-# app.config['CORS_HEADERS'] = 'Content-Type'
-
 app.debug = True
 app.config['PROPAGATE_EXCEPTIONS'] = True
 logging.getLogger('flask_cors').level = logging.DEBUG

@@ -1,7 +1,6 @@
-from flask import Blueprint, request, Response, jsonify
+from flask import Blueprint, request, jsonify
 from models.utils import *
 from datetime import datetime
-from app import app
 from flask_jwt_extended import (jwt_required)
 
 price = Blueprint("price", __name__)
@@ -22,7 +21,7 @@ def price_edit():
                 )):
         price = db_read("""SELECT * FROM transcribe_price""",
                             (), )
-        return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "price_data": price}), 201
+        return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "price": price[0]}), 201
     else:
         return jsonify({"jwt_token": refresh_token(), "msg": "failed transcribe", "success": "false"})
 
@@ -31,8 +30,9 @@ def price_edit():
 def get_price():
     price = db_read("""SELECT * FROM transcribe_price""",
                             (), )
+    print(price)
     if price:
-        return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "price_data": price})
+        return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "price": price[0]})
     else:
         return jsonify({"jwt_token": refresh_token(), "msg": "fail", "success": "false"})
 

@@ -8,6 +8,7 @@ MYSQL_DB = os.getenv("MYSQL_DB")
 MYSQL_HOST = os.getenv("MYSQL_HOST")
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+JWT_EXPIRE_MINUTES = os.getenv("JWT_EXPIRE_MINUTES")
 
 S3_KEY = os.getenv("S3_KEY")
 S3_SECRET_ACCESS_KEY = os.getenv("S3_SECRET_ACCESS_KEY")

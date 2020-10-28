@@ -1,8 +1,7 @@
-from flask import Blueprint, request, Response, jsonify
+from flask import Blueprint, request, jsonify
 from models.utils import *
 from datetime import datetime
-from app import app
-from flask_jwt_extended import (jwt_required, get_jwt_identity, create_access_token)
+from flask_jwt_extended import (jwt_required)
 
 transcribe = Blueprint("transcribe", __name__)
 
@@ -11,10 +10,6 @@ transcribe = Blueprint("transcribe", __name__)
 def audio_transcribe(media_id):
     s3_url = request.json["s3_url"]
     index = request.json["index"]
-    app.logger.debug('888888888888888888888')
-    app.logger.debug(media_id)
-    app.logger.debug(s3_url)
-    app.logger.debug('888888888888888888888')
     time.sleep(4)
     job_name = str(media_id) + '_' + str(time.time())
     # transcribe_url = transcribe_file(job_name, s3_url)

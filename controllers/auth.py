@@ -1,4 +1,4 @@
-from flask import Blueprint, request, Response, jsonify
+from flask import Blueprint, request, jsonify
 from models.utils import *
 from datetime import datetime
 

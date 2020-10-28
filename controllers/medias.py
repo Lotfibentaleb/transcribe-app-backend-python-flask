@@ -1,4 +1,4 @@
-from flask import Blueprint, request, Response, jsonify
+from flask import Blueprint, request, jsonify
 from models.utils import *
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -97,7 +97,7 @@ def media_upload():
                             "SELECT id, duration FROM media_datas where userId=%s and file_name=%s and s3_url like %s",
                             (user_id, filename, s3_full_url),)
                         if (media_data):
-                            return jsonify({"jwt_token": refresh_token(), "msg": "uploaded file successfully", "index": index, "s3_url": s3_full_url, "mediaId": media_data[0]["id"], "playTime": media_data[0]["duration"],
+                            return jsonify({"jwt_token": refresh_token(), "msg": "uploaded file successfully", "index": index, "s3_url": s3_full_url, "mediaId": media_data[0]["id"], "playTime": media_data[0]["duration"], "price": 2,
                                             "success": "true"}), 201
                         else: return jsonify({"jwt_token": refresh_token(), "msg": "failed saving db", "success": "false"}), 201
                     else: return jsonify({"jwt_token": refresh_token(), "msg": "failed saving db", "success": "false"}), 201

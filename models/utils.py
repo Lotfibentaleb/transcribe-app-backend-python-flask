@@ -4,11 +4,11 @@ from hashlib import pbkdf2_hmac
 import jwt
 import MySQLdb
 import boto3
-from settings import JWT_SECRET_KEY, S3_KEY, S3_SECRET_ACCESS_KEY
+from settings import JWT_SECRET_KEY, S3_KEY, S3_SECRET_ACCESS_KEY, JWT_EXPIRE_MINUTES
 import time
 import datetime
 from flask_jwt_extended import create_access_token, get_jwt_identity
-import json
+
 s3 = boto3.client(
    "s3",
    aws_access_key_id=S3_KEY,
@@ -16,6 +16,7 @@ s3 = boto3.client(
 )
 transcribe_client = boto3.client('transcribe', aws_access_key_id=S3_KEY, aws_secret_access_key=S3_SECRET_ACCESS_KEY)
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'aac', 'mp4', 'avi', 'mpeg'}
+
 def validate_user(email, password):
     current_user = db_read("""SELECT * FROM users WHERE email = %s""", (email,))
     app.logger.debug(current_user)
@@ -28,18 +29,20 @@ def validate_user(email, password):
             user_id = current_user[0]["id"]
             permission = current_user[0]["permission"]
             user_email = current_user[0]["email"]
-            expires = datetime.timedelta(minutes=60)
+            expires = datetime.timedelta(minutes=int(JWT_EXPIRE_MINUTES))
             jwt_token = create_access_token({"user_id": user_id, "permission": permission, "email": user_email}, expires_delta=expires)
             return jwt_token
         else:
             return False
     else:
         return False
+
 def refresh_token():
     current_user = get_jwt_identity()
     expires = datetime.timedelta(minutes=60)
     jwt_token = create_access_token(identity=current_user, expires_delta=expires)
     return jwt_token
+
 def generate_jwt_token(content):
     encoded_content = jwt.encode(content, JWT_SECRET_KEY, algorithm="HS256")
     token = str(encoded_content).split("'")[1]
@@ -118,7 +121,6 @@ def transcribe_file(job_name, file_uri):
         MediaFormat='mp3',
         LanguageCode='en-US'
     )
-
     max_tries = 60
     while max_tries > 0:
         max_tries -= 1
@@ -158,7 +160,6 @@ def distinguish_audio_video(param_extension):
         return "video"
 
     return "wrong"
-
 
 if __name__ == '__main__':
     main()
