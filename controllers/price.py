@@ -30,7 +30,6 @@ def price_edit():
 def get_price():
     price = db_read("""SELECT * FROM transcribe_price""",
                             (), )
-    print(price)
     if price:
         return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "price": price[0]})
     else:
