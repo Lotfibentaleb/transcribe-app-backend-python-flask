@@ -12,8 +12,8 @@ def audio_transcribe(media_id):
     index = request.json["index"]
     time.sleep(4)
     job_name = str(media_id) + '_' + str(time.time())
-    # transcribe_url = transcribe_file(job_name, s3_url)
-    transcribe_url = "https://transcribe-datas.s3.amazonaws.com/test1.json"
+    transcribe_url = transcribe_file(job_name, s3_url)
+    # transcribe_url = "https://transcribe-datas.s3.amazonaws.com/test1.json" // for testing on local
     file_name = db_read("""SELECT file_name FROM media_datas where id=%s""", (str(media_id),),)
     now = datetime.now()
     formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
