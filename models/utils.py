@@ -4,7 +4,7 @@ from hashlib import pbkdf2_hmac
 import jwt
 import MySQLdb
 import boto3
-from settings import JWT_SECRET_KEY, S3_KEY, S3_SECRET_ACCESS_KEY, JWT_EXPIRE_MINUTES
+from settings import JWT_SECRET_KEY, S3_KEY, S3_SECRET_ACCESS_KEY, JWT_EXPIRE_MINUTES, S3_TRANSCRIBE_BUCKET
 import time
 import datetime
 from flask_jwt_extended import create_access_token, get_jwt_identity
@@ -118,7 +118,8 @@ def transcribe_file(job_name, file_uri):
         TranscriptionJobName=job_name,
         Media={'MediaFileUri': file_uri},
         MediaFormat='mp3',
-        LanguageCode='en-US'
+        LanguageCode='en-US',
+        OutputBucketName=S3_TRANSCRIBE_BUCKET
     )
     max_tries = 60
     while max_tries > 0:
