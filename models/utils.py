@@ -113,12 +113,12 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def transcribe_file(job_name, file_uri):
+def transcribe_file(job_name, file_uri, lang, format):
     transcribe_client.start_transcription_job(
         TranscriptionJobName=job_name,
         Media={'MediaFileUri': file_uri},
-        MediaFormat='mp3',
-        LanguageCode='en-US',
+        MediaFormat=format,
+        LanguageCode=lang,
         OutputBucketName=S3_TRANSCRIBE_BUCKET
     )
     max_tries = 60
@@ -141,7 +141,6 @@ def transcribe_file(job_name, file_uri):
 def calc_total_price(duration):
     price = db_read("""SELECT * FROM transcribe_price""",
                     (), )
-    print("duration: ", duration)
     price_per_minute = price[0]["price_per_minute"]
     price_per_half_minute = price[0]["price_per_half_minute"]
     minimum_price = price[0]["minimum_price"]
@@ -155,10 +154,8 @@ def calc_total_price(duration):
         calc_remain_seconds = 1
     total_price = price_per_minute * total_minute + price_per_half_minute * calc_remain_seconds
     if(total_price < minimum_price):
-        print("total_price: ", minimum_price)
         return minimum_price
     else:
-        print("total_price: ", round(total_price, 2))
         return round(total_price, 2)
 
 def distinguish_audio_video(param_extension):

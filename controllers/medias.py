@@ -6,6 +6,7 @@ from settings import S3_MEDIA_BUCKET
 from flask_jwt_extended import (jwt_required, get_jwt_identity)
 import subprocess
 import json
+import math
 
 medias = Blueprint("medias", __name__)
 @medias.route("/", methods=["GET"])
@@ -53,6 +54,20 @@ def media_delete(media_id):
     else:
         return jsonify({"jwt_token": refresh_token(), "msg": "delete media fail", "success": "false"}), 409
 
+@medias.route("/<int:media_id>/url", methods=["GET"])
+@jwt_required
+def get_presigned_url(media_id):
+    file_name = db_read("SELECT transcribe_s3_url FROM media_datas WHERE id=%s",
+                         ([media_id],), )
+    if (file_name):
+        presigned_url = s3.generate_presigned_url('get_object',
+                                                  Params={'Bucket': S3_TRANSCRIBE_BUCKET, 'Key': file_name[0]["transcribe_s3_url"]},
+                                                  ExpiresIn=259200)  # expire 3 * 24 * 3600
+        return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "transcribe_url": presigned_url}), 201
+    else:
+        return jsonify(
+            {"jwt_token": refresh_token(), "msg": "no media file like that", "success": "true"}), 201
+
 @medias.route("/upload", methods=["POST"])
 @jwt_required
 def media_upload():
@@ -90,14 +105,15 @@ def media_upload():
                                                         app.config["S3_MEDIA_LOCATION"], user_id)
                     else:
                         return jsonify({"msg": "wrong file format", "success": "false"}), 201
+
                     if db_write(
-                        """INSERT INTO media_datas (userId, file_name, s3_url, file_extension, transcribe_status, duration, file_size, createdAt, updatedAt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                        (user_id, filename, s3_full_url, json_media_detail["format"]["format_name"], '0', json_media_detail["format"]["duration"], json_media_detail["format"]["size"], formatted_date, formatted_date),):
+                        """INSERT INTO media_datas (userId, file_name, s3_url, file_extension, transcribe_status, duration, price, file_size, createdAt, updatedAt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                        (user_id, filename, s3_full_url, json_media_detail["format"]["format_name"], '0', json_media_detail["format"]["duration"], str(calc_total_price(math.ceil(float(json_media_detail["format"]["duration"])))), json_media_detail["format"]["size"], formatted_date, formatted_date),):
                         media_data = db_read(
                             "SELECT id, duration FROM media_datas where userId=%s and file_name=%s and s3_url like %s",
                             (user_id, filename, s3_full_url),)
                         if (media_data):
-                            return jsonify({"jwt_token": refresh_token(), "msg": "uploaded file successfully", "index": index, "s3_url": s3_full_url, "mediaId": media_data[0]["id"], "duration": media_data[0]["duration"], "price": calc_total_price(media_data[0]["duration"]),
+                            return jsonify({"jwt_token": refresh_token(), "msg": "uploaded file successfully", "index": index, "s3_url": s3_full_url, "file_name": filename, "mediaId": media_data[0]["id"], "duration": media_data[0]["duration"], "price": calc_total_price(math.ceil(float(json_media_detail["format"]["duration"]))),
                                             "success": "true"}), 201
                         else: return jsonify({"jwt_token": refresh_token(), "msg": "failed saving db", "success": "false"}), 201
                     else: return jsonify({"jwt_token": refresh_token(), "msg": "failed saving db", "success": "false"}), 201
