@@ -12,10 +12,9 @@ def user_list():
     user_id = current_user["user_id"]
     user_permission = current_user["permission"]
     if user_permission == "admin":
-        user_list = db_read("""SELECT id, email, first_name, last_name, permission, createdAt, updatedAt FROM users""", (),)
+        user_list = db_read("""SELECT id, email, first_name, last_name, permission, createdAt, updatedAt FROM users WHERE activate=%s""", ("1",),)
     else:
-        user_list = db_read("""SELECT id, email, first_name, last_name, permission, createdAt, updatedAt FROM users WHERE id=%s""",
-                            (str(user_id),), )
+        user_list = db_read("""SELECT id, email, first_name, last_name, permission, createdAt, updatedAt FROM users WHERE id=%s""", (str(user_id),),)
     if user_list:
         return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "users": user_list})
     else:
@@ -38,10 +37,10 @@ def user_add():
     now = datetime.now()
     formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
     if db_write(
-            """INSERT INTO users (email, password_salt, password_hash, first_name, last_name, permission, createdAt, updatedAt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-            (user_email, password_salt, password_hash, user_first_name, user_last_name, "user", formatted_date, formatted_date),
+            """INSERT INTO users (email, password_salt, password_hash, first_name, last_name, permission, createdAt, updatedAt, activate) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+            (user_email, password_salt, password_hash, user_first_name, user_last_name, "user", formatted_date, formatted_date, "1"),
     ):
-        user_list = db_read("""SELECT id, email, first_name, last_name, createdAt, updatedAt FROM users""", (),)
+        user_list = db_read("""SELECT id, email, first_name, last_name, createdAt, updatedAt FROM users WHERE activate=%s""", ("1",),)
         if user_list:
             return jsonify({"jwt_token": refresh_token(), "users": user_list, "msg": "success", "success": "true"})
         else:
@@ -69,9 +68,8 @@ def user_edit(user_id):
 @users.route("/delete/<int:user_id>", methods=["GET"])
 @jwt_required
 def user_delete(user_id):
-    if db_write("""DELETE FROM users WHERE id=%s""", [user_id]):
-
-        user_list = db_read("""SELECT id, email, first_name, last_name, createdAt, updatedAt FROM users""", (), )
+    if db_write("""UPDATE users SET activate=%s WHERE id=%s""", ('0', [user_id])):
+        user_list = db_read("""SELECT id, email, first_name, last_name, createdAt, updatedAt FROM users WHERE activate=%s""", ("1",), )
         if user_list:
             return jsonify({"jwt_token": refresh_token(), "users": user_list, "msg": "success", "success": "true"})
         else:

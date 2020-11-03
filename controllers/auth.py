@@ -24,8 +24,8 @@ def register_user():
         now = datetime.now()
         formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
         if db_write(
-            """INSERT INTO users (email, password_salt, password_hash, first_name, last_name, permission, createdAt, updatedAt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-            (user_email, password_salt, password_hash, user_first_name, user_last_name, "user", formatted_date, formatted_date),
+            """INSERT INTO users (email, password_salt, password_hash, first_name, last_name, permission, createdAt, updatedAt, activate) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+            (user_email, password_salt, password_hash, user_first_name, user_last_name, "user", formatted_date, formatted_date, "1"),
         ):
             return jsonify({"msg": "Registration Success", "success": "true"}), 201
         else:
@@ -42,6 +42,9 @@ def login_user():
     current_user = db_read("""SELECT * FROM users WHERE email = %s""", (user_email,))
     user_token = validate_user(user_email, user_password)
     if user_token:
+        now = datetime.now()
+        formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
+        db_write("""UPDATE users SET updatedAt=%s WHERE id=%s""", (formatted_date, current_user[0]["id"]),)
         return jsonify({"msg": "login success", "success": "true", "jwt_token": user_token, "permission": current_user[0]["permission"]})
     else:
         return jsonify({"msg": "bad user email or password", "success": "false"}), 201

@@ -107,8 +107,8 @@ def media_upload():
                         return jsonify({"msg": "wrong file format", "success": "false"}), 201
 
                     if db_write(
-                        """INSERT INTO media_datas (userId, file_name, s3_url, file_extension, transcribe_status, duration, price, file_size, createdAt, updatedAt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                        (user_id, filename, s3_full_url, json_media_detail["format"]["format_name"], '0', json_media_detail["format"]["duration"], str(calc_total_price(math.ceil(float(json_media_detail["format"]["duration"])))), json_media_detail["format"]["size"], formatted_date, formatted_date),):
+                        """INSERT INTO media_datas (userId, file_name, s3_url, file_extension, transcribe_status, duration, price, aws_price, file_size, createdAt, updatedAt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                        (user_id, filename, s3_full_url, json_media_detail["format"]["format_name"], '0', json_media_detail["format"]["duration"], str(calc_total_price(math.ceil(float(json_media_detail["format"]["duration"])))), str(calc_aws_price(math.ceil(float(json_media_detail["format"]["duration"])))), json_media_detail["format"]["size"], formatted_date, formatted_date),):
                         media_data = db_read(
                             "SELECT id, duration FROM media_datas where userId=%s and file_name=%s and s3_url like %s",
                             (user_id, filename, s3_full_url),)
