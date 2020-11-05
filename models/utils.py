@@ -121,7 +121,7 @@ def transcribe_file(job_name, file_uri, lang, format):
         LanguageCode=lang,
         OutputBucketName=S3_TRANSCRIBE_BUCKET
     )
-    max_tries = 60
+    max_tries = 180 #maxmum waiting time = 30min
     while max_tries > 0:
         max_tries -= 1
         job = transcribe_client.get_transcription_job(TranscriptionJobName=job_name)
@@ -137,6 +137,7 @@ def transcribe_file(job_name, file_uri, lang, format):
         else:
             print(f"Waiting for {job_name}. Current status is {job_status}.")
         time.sleep(10)
+    return False
 
 def calc_total_price(duration):
     price = db_read("""SELECT * FROM transcribe_price""",

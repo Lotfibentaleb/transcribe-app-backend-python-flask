@@ -15,6 +15,8 @@ def audio_video_transcribe(media_id):
     file_format = file_name.split(".")[1]
     job_name = str(media_id) + '_' + str(time.time())
     transcribe_url = transcribe_file(job_name, s3_url, lang, file_format)
+    if (transcribe_url == False):
+        return jsonify({"jwt_token": refresh_token(), "msg": "failed transcribe", "success": "false"})
     s3_job_name = job_name + ".json"
     # transcribe_url = "https://transcribe-datas.s3.amazonaws.com/test1.json" // for testing on local
     file_name = db_read("""SELECT file_name FROM media_datas where id=%s""", (str(media_id),),)
