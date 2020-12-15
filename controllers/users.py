@@ -88,6 +88,21 @@ def user_profile():
     else:
         return jsonify({"jwt_token": refresh_token(), "msg": "fail", "success": "false"})
 
+
+@users.route("/edit/profile", methods=["POST"])
+@jwt_required
+def update_profile():
+    current_user = get_jwt_identity()
+    user_id = current_user["user_id"]
+    user_email = request.json["email"]
+    user_first_name = request.json["first_name"]
+    user_last_name = request.json["last_name"]
+    if db_write("""UPDATE users SET email=%s, first_name=%s, last_name=%s WHERE id=%s""", (user_email, user_first_name, user_last_name, user_id),
+    ):
+        return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true"})
+    else:
+        return jsonify({"jwt_token": refresh_token(), "msg": "Updating profile fail!", "success": "false"}), 409
+
 @users.route("/resetpassword", methods=["POST"])
 @jwt_required
 def reset_password():
@@ -96,9 +111,17 @@ def reset_password():
     current_password = request.json["current_password"]
     new_password = request.json["new_password"]
     confirm_password = request.json["confirm_password"]
+    if new_password != confirm_password:
+        return jsonify({"jwt_token": refresh_token(), "msg": "Does not equal between new password and confirm password", "success": "false"})
 
-    # profile = db_read("""SELECT id, email, first_name, last_name, permission, createdAt, updatedAt FROM users WHERE id=%s""", (str(user_id),),)
-    # if profile:
-    #     return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "profile": profile})
-    # else:
-    #     return jsonify({"jwt_token": refresh_token(), "msg": "fail", "success": "false"})
+    if password_compare(user_id, current_password):
+        password_salt = generate_salt()
+        password_hash = generate_hash(new_password, password_salt)
+        now = datetime.now()
+        formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
+        if db_write("""UPDATE users SET password_salt=%s, password_hash=%s, updatedAt=%s WHERE id=%s""", (password_salt, password_hash, formatted_date, user_id), ):
+            return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true"})
+        else:
+            return jsonify({"jwt_token": refresh_token(), "msg": "fail", "success": "false"})
+    else:
+        return jsonify({"jwt_token": refresh_token(), "msg": "Wrong current password!", "success": "false"})

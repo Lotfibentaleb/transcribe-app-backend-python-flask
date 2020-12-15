@@ -36,6 +36,19 @@ def validate_user(email, password):
     else:
         return False
 
+def password_compare(userid, password):
+    current_user = db_read("""SELECT * FROM users WHERE id = %s and activate=%s""", ([userid], '1',))
+    if len(current_user) == 1:
+        saved_password_hash = current_user[0]["password_hash"]
+        saved_password_salt = current_user[0]["password_salt"]
+        password_hash = generate_hash(password, saved_password_salt)
+        if password_hash == saved_password_hash:
+            return True
+        else:
+            return False
+    else:
+        return False
+
 def refresh_token():
     current_user = get_jwt_identity()
     expires = datetime.timedelta(minutes=60)

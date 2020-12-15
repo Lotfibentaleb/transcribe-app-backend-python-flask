@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from models.utils import *
+from helpers.emailTemplate.forgotPassword import *
 from services.mailservice import *
 from datetime import datetime
 import random
@@ -60,15 +61,14 @@ def forgot_password():
     if len(current_user) == 1:
         letters = string.ascii_letters
         landom_password = ''.join(random.choice(letters) for i in range(6))
-        print("Random string is:", landom_password)
+        # print("Random string is:", landom_password)
         password_salt = generate_salt()
         password_hash = generate_hash(landom_password, password_salt)
-        print("--------------------------------------")
         now = datetime.now()
         formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
-        print("--------------------------------------", formatted_date)
         db_write("""UPDATE users SET password_salt=%s, password_hash=%s, updatedAt=%s WHERE id=%s""", (password_salt, password_hash, formatted_date, current_user[0]["id"]), )
-        # send_mail(user_email, 'forgot password', 'Forgot Password', '<html><body>Hello</body></html>')
+        html = getForgotPassworHtml(landom_password)
+        send_mail(user_email, 'Received New Password from www.accuscript.ai', 'Forgot Password', html)
         return jsonify({"msg": "Success, Please check your email!", "success": "true"})
     else:
         return jsonify({"msg": "Does not exist email, Please sign up first", "success": "false"})
