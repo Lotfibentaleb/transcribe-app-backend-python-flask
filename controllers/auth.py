@@ -1,6 +1,9 @@
 from flask import Blueprint, request, jsonify
 from models.utils import *
+from services.mailservice import *
 from datetime import datetime
+import random
+import string
 
 auth = Blueprint("auth", __name__)
 
@@ -45,6 +48,27 @@ def login_user():
         now = datetime.now()
         formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
         db_write("""UPDATE users SET updatedAt=%s WHERE id=%s""", (formatted_date, current_user[0]["id"]),)
+        # send_mail('bluestreak66@protonmail.com', 'sign in', 'test', '<html><body>Hello</body></html>')
         return jsonify({"msg": "login success", "success": "true", "jwt_token": user_token, "permission": current_user[0]["permission"]})
     else:
         return jsonify({"msg": "bad user email or password", "success": "false"}), 201
+
+@auth.route("/forgotpassword", methods=["POST"])
+def forgot_password():
+    user_email = request.json["email"]
+    current_user = db_read("""SELECT * FROM users WHERE email = %s""", (user_email,))
+    if len(current_user) == 1:
+        letters = string.ascii_letters
+        landom_password = ''.join(random.choice(letters) for i in range(6))
+        print("Random string is:", landom_password)
+        password_salt = generate_salt()
+        password_hash = generate_hash(landom_password, password_salt)
+        print("--------------------------------------")
+        now = datetime.now()
+        formatted_date = now.strftime('%Y-%m-%d %H:%M:%S')
+        print("--------------------------------------", formatted_date)
+        db_write("""UPDATE users SET password_salt=%s, password_hash=%s, updatedAt=%s WHERE id=%s""", (password_salt, password_hash, formatted_date, current_user[0]["id"]), )
+        # send_mail(user_email, 'forgot password', 'Forgot Password', '<html><body>Hello</body></html>')
+        return jsonify({"msg": "Success, Please check your email!", "success": "true"})
+    else:
+        return jsonify({"msg": "Does not exist email, Please sign up first", "success": "false"})

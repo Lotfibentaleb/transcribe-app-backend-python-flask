@@ -59,6 +59,7 @@ def media_delete(media_id):
 def get_presigned_url(media_id):
     file_name = db_read("SELECT transcribe_s3_url FROM media_datas WHERE id=%s",
                          ([media_id],), )
+    print(file_name[0])
     if (file_name):
         presigned_url = s3.generate_presigned_url('get_object',
                                                   Params={'Bucket': S3_TRANSCRIBE_BUCKET, 'Key': file_name[0]["transcribe_s3_url"]},

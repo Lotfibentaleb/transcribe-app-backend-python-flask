@@ -76,3 +76,29 @@ def user_delete(user_id):
             return jsonify({"jwt_token": refresh_token(), "msg": "fail", "success": "false"}), 409
     else:
         return jsonify({"jwt_token": refresh_token(), "msg": "fail", "success": "false"}), 409
+
+@users.route("/profile", methods=["GET"])
+@jwt_required
+def user_profile():
+    current_user = get_jwt_identity()
+    user_id = current_user["user_id"]
+    profile = db_read("""SELECT id, email, first_name, last_name, permission, createdAt, updatedAt FROM users WHERE id=%s""", (str(user_id),),)
+    if profile:
+        return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "profile": profile})
+    else:
+        return jsonify({"jwt_token": refresh_token(), "msg": "fail", "success": "false"})
+
+@users.route("/resetpassword", methods=["POST"])
+@jwt_required
+def reset_password():
+    current_user = get_jwt_identity()
+    user_id = current_user["user_id"]
+    current_password = request.json["current_password"]
+    new_password = request.json["new_password"]
+    confirm_password = request.json["confirm_password"]
+
+    # profile = db_read("""SELECT id, email, first_name, last_name, permission, createdAt, updatedAt FROM users WHERE id=%s""", (str(user_id),),)
+    # if profile:
+    #     return jsonify({"jwt_token": refresh_token(), "msg": "success", "success": "true", "profile": profile})
+    # else:
+    #     return jsonify({"jwt_token": refresh_token(), "msg": "fail", "success": "false"})
